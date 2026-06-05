@@ -15,22 +15,21 @@ const modeLabel = computed(() => {
 </script>
 
 <template>
-  <footer class="flex items-center h-7 px-3 border-t border-border bg-muted/40 shrink-0 gap-4 text-[11px] text-muted-foreground select-none">
+  <footer class="flex items-center h-7 px-3 border-t border-border bg-muted/40 shrink-0 gap-4 text-[11px] text-muted-foreground select-none status-bar">
     <!-- Left: filename + dirty -->
-    <span class="flex items-center gap-1.5">
+    <span v-if="store.hasActiveFile" class="flex items-center gap-1.5">
       <span
         v-if="store.isDirty"
         class="w-2 h-2 rounded-full bg-orange-400 shrink-0"
         title="未保存"
       />
-      <span v-if="store.filename" class="truncate max-w-48">{{ store.filename }}</span>
-      <span v-else class="italic">未命名</span>
+      <span class="truncate max-w-48">{{ store.filename ?? store.draftTitle ?? '未命名' }}</span>
     </span>
 
     <div class="flex-1" />
 
     <!-- Center: cursor pos -->
-    <span v-if="store.mode !== 'preview'">
+    <span v-if="store.hasActiveFile && store.mode !== 'preview'">
       第 {{ store.cursorLine }} 行，第 {{ store.cursorCol }} 列
     </span>
 

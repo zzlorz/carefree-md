@@ -3,6 +3,7 @@ export interface Draft {
   title: string
   content: string
   updatedAt: number
+  customTitle?: string  // User-renamed title; takes precedence over auto-derived
 }
 
 const DB_NAME = 'carefree-md'
@@ -44,10 +45,17 @@ export async function dbCreateDraft(content: string, title: string): Promise<num
   return id
 }
 
-export async function dbSaveDraft(id: number, content: string, title: string): Promise<void> {
+export async function dbSaveDraft(
+  id: number,
+  content: string,
+  title: string,
+  customTitle?: string
+): Promise<void> {
   const db = await openDB()
   const t = db.transaction(STORE, 'readwrite')
-  await idbReq(t.objectStore(STORE).put({ id, title, content, updatedAt: Date.now() }))
+  const draft: any = { id, title, content, updatedAt: Date.now() }
+  if (customTitle !== undefined) draft.customTitle = customTitle
+  await idbReq(t.objectStore(STORE).put(draft))
 }
 
 export async function dbGetDraft(id: number): Promise<Draft | undefined> {

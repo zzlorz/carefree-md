@@ -47,7 +47,10 @@ export function useIDB() {
 
   /** Persist changes to an existing draft */
   async function saveDraft(id: number, content: string): Promise<void> {
-    await dbSaveDraft(id, content, deriveTitle(content))
+    // Check if draft has a custom title set by the user
+    const existing = await dbGetDraft(id)
+    const finalTitle = existing?.customTitle ?? deriveTitle(content)
+    await dbSaveDraft(id, content, finalTitle, existing?.customTitle)
     await refresh()
   }
 

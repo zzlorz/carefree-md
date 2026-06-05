@@ -29,7 +29,7 @@ onMounted(async () => {
   const all = await idb.refresh().then(() => idb.drafts.value)
   if (all.length > 0) {
     const latest = all[0]
-    store.loadDraft(latest.id, latest.content)
+    store.loadDraft(latest.id, latest.content, latest.customTitle ?? latest.title)
   }
 })
 </script>

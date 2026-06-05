@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Print styles: only show preview content */
+@media print {
+  /* Hide everything except preview */
+  header, aside, .format-bar, .status-bar, .editor-container {
+    display: none !important;
+  }
+
+  /* Make preview take full page */
+  main {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    border: none !important;
+  }
+
+  /* Reset preview container */
+  .markdown-body {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Clean page breaks */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+
+  pre, blockquote, table {
+    page-break-inside: avoid;
+  }
+
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

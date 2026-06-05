@@ -19,6 +19,11 @@ export function useAutoSave() {
       timer = setTimeout(async () => {
         if (store.draftId === null) return
         await idb.saveDraft(store.draftId, newContent)
+        // Sync title back if no custom title has been set
+        const draft = await idb.loadDraft(store.draftId)
+        if (draft && !draft.customTitle) {
+          store.draftTitle = draft.title
+        }
       }, 1200)
     }
   )

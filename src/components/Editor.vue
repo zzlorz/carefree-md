@@ -136,7 +136,15 @@ type FormatCmd = string
 
 function executeFormat(cmd: FormatCmd) {
   if (!view) return
-  if (cmd === 'bold')            { toggleFormat(view, '**'); }
+  if (cmd.startsWith('emoji:')) {
+    const emoji = cmd.slice(6)
+    const { from, to } = view.state.selection.main
+    view.dispatch({
+      changes: { from, to, insert: emoji },
+      selection: { anchor: from + emoji.length },
+    })
+  }
+  else if (cmd === 'bold')            { toggleFormat(view, '**'); }
   else if (cmd === 'italic')         { toggleFormat(view, '_'); }
   else if (cmd === 'strikethrough')  { toggleFormat(view, '~~'); }
   else if (cmd === 'underline')      { toggleHtmlWrap(view, 'u'); }
@@ -213,6 +221,14 @@ onMounted(() => {
           store.cursorLine = line.number
           store.cursorCol = pos - line.from + 1
         }
+        // Track scroll position
+        if (update.view.scrollDOM) {
+          const el = update.view.scrollDOM
+          const ratio = el.scrollHeight > el.clientHeight
+            ? el.scrollTop / (el.scrollHeight - el.clientHeight)
+            : 0
+          store.editorScrollRatio = ratio
+        }
       }),
     ],
   })
@@ -244,6 +260,36 @@ watch(
   }
 )
 
+// Outline jump
+watch(
+  () => store.outlineJumpTarget,
+  (targetLine) => {
+    if (!view || targetLine === null) return
+    const line = view.state.doc.line(targetLine + 1) // CodeMirror lines are 1-indexed
+    view.dispatch({
+      selection: { anchor: line.from },
+      effects: EditorView.scrollIntoView(line.from, { y: 'start', yMargin: 100 }),
+    })
+    view.focus()
+    store.outlineJumpTarget = null
+  }
+)
+
+// Sync scroll from preview to editor
+let ignoreEditorScroll = false
+watch(
+  () => store.previewScrollRatio,
+  (ratio) => {
+    if (!view || ignoreEditorScroll) return
+    const el = view.scrollDOM
+    if (el.scrollHeight > el.clientHeight) {
+      ignoreEditorScroll = true
+      el.scrollTop = ratio * (el.scrollHeight - el.clientHeight)
+      setTimeout(() => { ignoreEditorScroll = false }, 50)
+    }
+  }
+)
+
 onUnmounted(() => {
   store.formatExecutor = null
   view?.destroy()
@@ -252,5 +298,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="container" class="h-full overflow-hidden" />
+  <div ref="container" class="h-full overflow-hidden editor-container" />
 </template>

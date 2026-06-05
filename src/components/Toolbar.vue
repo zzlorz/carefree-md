@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import {
   PanelLeft,
   FilePlus,
   FolderOpen,
   Save,
+  Printer,
   Columns2,
   FileText,
   Eye,
@@ -13,10 +15,12 @@ import {
 } from 'lucide-vue-next'
 import { useEditorStore } from '@/stores/editor'
 import { useFileSystem } from '@/composables/useFileSystem'
+import PrintPreview from '@/components/PrintPreview.vue'
 import type { EditorMode } from '@/types'
 
 const store = useEditorStore()
 const fs = useFileSystem()
+const showPrint = ref(false)
 
 const modes: { id: EditorMode; label: string; icon: unknown }[] = [
   { id: 'edit', label: '编辑', icon: FileText },
@@ -62,6 +66,9 @@ function handleClose() {
     >
       <Save :size="16" />
     </button>
+    <button class="toolbar-btn" title="打印预览" @click="showPrint = true">
+      <Printer :size="16" />
+    </button>
 
     <!-- Current file chip + close button -->
     <div v-if="store.hasActiveFile" class="flex items-center gap-1 ml-1">
@@ -71,7 +78,7 @@ function handleClose() {
           class="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"
           title="未保存"
         />
-        <span class="truncate">{{ store.filename ?? '未命名' }}</span>
+        <span class="truncate">{{ store.filename ?? store.draftTitle ?? '未命名' }}</span>
       </div>
       <button
         class="toolbar-btn !p-1"
@@ -122,6 +129,9 @@ function handleClose() {
       <Sun v-else :size="16" />
     </button>
   </header>
+
+  <!-- Print Preview Modal -->
+  <PrintPreview v-if="showPrint" @close="showPrint = false" />
 </template>
 
 <style scoped>

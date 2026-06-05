@@ -50,12 +50,12 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside))
 <template>
   <div ref="btnEl">
     <button
-      class="toolbar-btn flex items-center gap-0.5 font-semibold"
+      class="toolbar-btn flex items-center gap-0.5"
       title="标题"
       @mousedown.prevent
       @click="toggle"
     >
-      <span class="text-[16px]">H</span>
+      <span class="font-semibold text-[15px]">H</span>
       <ChevronDown :size="10" class="opacity-60" />
     </button>
 

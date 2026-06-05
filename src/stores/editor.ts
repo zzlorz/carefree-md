@@ -17,12 +17,18 @@ export const useEditorStore = defineStore('editor', () => {
   const formatExecutor = ref<((cmd: string) => void) | null>(null)
   const cursorLine = ref(1)
   const cursorCol = ref(1)
+  const outlineJumpTarget = ref<number | null>(null)
+
+  // Sync scroll: percentage (0-1) to sync between editor and preview
+  const editorScrollRatio = ref(0)
+  const previewScrollRatio = ref(0)
 
   /**
    * ID of the current IndexedDB draft (null when editing a pure disk file
    * that was never saved as a draft).
    */
   const draftId = ref<number | null>(null)
+  const draftTitle = ref<string | null>(null)
 
   const title = computed(() => {
     if (!filename.value) return 'Carefree MD'
@@ -50,19 +56,16 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /** Load an IndexedDB draft into the editor */
-  function loadDraft(id: number, text: string, name: string | null = null) {
+  function loadDraft(id: number, text: string, title: string | null = null) {
     content.value = text
-    filename.value = name
+    filename.value = null      // draft has no disk filename
     fileHandle.value = null
     isDirty.value = false
     hasActiveFile.value = true
     draftId.value = id
+    draftTitle.value = title   // shown in toolbar
   }
 
-  /**
-   * Open a blank editing session that is backed by an IDB draft.
-   * The caller must supply the newly-created draft id.
-   */
   function openNewDraft(id: number) {
     content.value = ''
     filename.value = null
@@ -70,6 +73,7 @@ export const useEditorStore = defineStore('editor', () => {
     isDirty.value = false
     hasActiveFile.value = true
     draftId.value = id
+    draftTitle.value = '未命名'
   }
 
   function closeFile() {
@@ -79,6 +83,9 @@ export const useEditorStore = defineStore('editor', () => {
     isDirty.value = false
     hasActiveFile.value = false
     draftId.value = null
+    draftTitle.value = null
+    cursorLine.value = 1
+    cursorCol.value = 1
   }
 
   function markSaved() {
@@ -117,6 +124,10 @@ export const useEditorStore = defineStore('editor', () => {
     hasActiveFile,
     formatExecutor,
     draftId,
+    draftTitle,
+    outlineJumpTarget,
+    editorScrollRatio,
+    previewScrollRatio,
     setContent,
     loadFile,
     loadDraft,

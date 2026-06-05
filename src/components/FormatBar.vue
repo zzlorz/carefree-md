@@ -8,6 +8,7 @@ import {
 import { useEditorStore } from '@/stores/editor'
 import HeadingPicker from './HeadingPicker.vue'
 import CodeBlockPicker from './CodeBlockPicker.vue'
+import EmojiPicker from './EmojiPicker.vue'
 
 const store = useEditorStore()
 const fmt = (cmd: string) => store.formatExecutor?.(cmd)
@@ -17,9 +18,12 @@ type BtnItem  = { kind: 'btn';       cmd: string; icon: unknown; title: string }
 type SepItem  = { kind: 'sep' }
 type HItem    = { kind: 'heading' }
 type CBItem   = { kind: 'codeblock' }
-type Item     = BtnItem | SepItem | HItem | CBItem
+type EItem    = { kind: 'emoji' }
+type Item     = BtnItem | SepItem | HItem | CBItem | EItem
 
 const ITEMS: Item[] = [
+  { kind: 'emoji' },
+  { kind: 'sep' },
   { kind: 'heading' },
   { kind: 'sep' },
   { kind: 'btn', cmd: 'bold',          icon: Bold,          title: '加粗' },
@@ -41,6 +45,7 @@ const ITEMS: Item[] = [
 
 // width estimate in px for each kind
 const PX: Record<Item['kind'], number> = {
+  emoji:     34,
   heading:   46,
   codeblock: 40,
   btn:       30,
@@ -109,12 +114,16 @@ function pickMore(cmd: string) { fmt(cmd); moreOpen.value = false }
 <template>
   <div
     ref="barEl"
-    class="flex items-center gap-0.5 h-9 border-b border-border bg-muted/20 shrink-0 overflow-hidden pr-2"
+    class="flex items-center gap-0.5 h-9 border-b border-border bg-muted/20 shrink-0 overflow-hidden pr-2 format-bar"
     style="padding-left: 52px"
   >
     <template v-for="(item, idx) in visibleItems" :key="idx">
       <div v-if="item.kind === 'sep'" class="w-px h-4 bg-border mx-0.5 shrink-0" />
 
+      <EmojiPicker
+        v-else-if="item.kind === 'emoji'"
+        @select="(e) => fmt(`emoji:${e}`)"
+      />
       <HeadingPicker
         v-else-if="item.kind === 'heading'"
         @select="(l) => fmt(`heading:${l}`)"
@@ -155,6 +164,11 @@ function pickMore(cmd: string) { fmt(cmd); moreOpen.value = false }
           :style="morePos"
         >
           <template v-for="(item, idx) in hiddenItems" :key="idx">
+            <!-- Emoji -->
+            <div v-if="item.kind === 'emoji'" class="px-2 py-1.5">
+              <EmojiPicker @select="(e) => { pickMore(`emoji:${e}`) }" />
+            </div>
+
             <!-- Heading -->
             <template v-if="item.kind === 'heading'">
               <p class="text-[10px] text-muted-foreground uppercase tracking-wider px-3 pt-1.5 pb-1">标题</p>
