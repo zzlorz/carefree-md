@@ -165,7 +165,7 @@ function closeDirectory() {
     <div class="flex border-b border-border shrink-0">
       <button
         class="flex-1 flex items-center justify-center gap-1.5 h-9 text-xs font-medium transition-colors"
-        :class="activeTab === 'files' ? 'bg-background text-foreground border-b-2 border-blue-500' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'"
+        :class="activeTab === 'files' ? 'bg-background text-foreground border-b-2 border-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'"
         @click="activeTab = 'files'"
       >
         <FileText :size="12" />
@@ -173,7 +173,7 @@ function closeDirectory() {
       </button>
       <button
         class="flex-1 flex items-center justify-center gap-1.5 h-9 text-xs font-medium transition-colors"
-        :class="activeTab === 'outline' ? 'bg-background text-foreground border-b-2 border-blue-500' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'"
+        :class="activeTab === 'outline' ? 'bg-background text-foreground border-b-2 border-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'"
         @click="activeTab = 'outline'"
       >
         <Hash :size="12" />
@@ -223,14 +223,14 @@ function closeDirectory() {
         <FileText
           :size="13"
           class="mt-0.5 shrink-0"
-          :class="store.draftId === draft.id ? 'text-blue-500' : 'text-muted-foreground'"
+          :class="store.draftId === draft.id ? 'text-foreground' : 'text-muted-foreground'"
         />
         <div class="flex-1 min-w-0">
           <input
             v-if="editingId === draft.id"
             v-model="editingTitle"
             class="w-full text-[13px] font-medium leading-tight px-1 py-0.5 rounded
-                   bg-background border border-border focus:outline-none focus:ring-1 focus:ring-blue-500"
+                   bg-background border border-border focus:outline-none focus:ring-1 focus:ring-black"
             @click.stop
             @keydown.enter="saveTitle(draft.id)"
             @keydown.esc="cancelEdit"

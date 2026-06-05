@@ -16,6 +16,7 @@ import {
 import { useEditorStore } from '@/stores/editor'
 import { useFileSystem } from '@/composables/useFileSystem'
 import PrintPreview from '@/components/PrintPreview.vue'
+import ExportMenu from '@/components/ExportMenu.vue'
 import type { EditorMode } from '@/types'
 
 const store = useEditorStore()
@@ -66,9 +67,6 @@ function handleClose() {
     >
       <Save :size="16" />
     </button>
-    <button class="toolbar-btn" title="打印预览" @click="showPrint = true">
-      <Printer :size="16" />
-    </button>
 
     <!-- Current file chip + close button -->
     <div v-if="store.hasActiveFile" class="flex items-center gap-1 ml-1">
@@ -116,6 +114,14 @@ function handleClose() {
         {{ m.label }}
       </button>
     </div>
+
+    <div class="w-px h-5 bg-border mx-1" />
+
+    <!-- Print + Export -->
+    <button class="toolbar-btn" title="打印预览" @click="showPrint = true">
+      <Printer :size="16" />
+    </button>
+    <ExportMenu />
 
     <div class="w-px h-5 bg-border mx-1" />
 
