@@ -31,6 +31,17 @@ export function useFileSystem() {
   }
 
   async function saveFile() {
+    // Draft mode: save to IDB immediately, no dialog
+    if (store.draftId !== null) {
+      await idb.saveDraft(store.draftId, store.content)
+      const draft = await idb.loadDraft(store.draftId)
+      if (draft && !draft.customTitle) {
+        store.draftTitle = draft.title
+      }
+      return
+    }
+
+    // Disk file mode: write to the open handle, or show save-as dialog
     if (store.fileHandle) {
       try {
         const writable = await store.fileHandle.createWritable()

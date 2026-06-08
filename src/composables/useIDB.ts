@@ -7,6 +7,7 @@ import {
   dbDeleteDraft,
   type Draft,
 } from '@/lib/db'
+import { imageDbDeleteByDraft } from '@/lib/imageDb'
 
 // ── module-level singleton so all composable calls share the same list ──
 const drafts = ref<Draft[]>([])
@@ -59,8 +60,9 @@ export function useIDB() {
     return dbGetDraft(id)
   }
 
-  /** Remove a draft */
+  /** Remove a draft and all its associated images */
   async function deleteDraft(id: number): Promise<void> {
+    await imageDbDeleteByDraft(id)
     await dbDeleteDraft(id)
     await refresh()
   }

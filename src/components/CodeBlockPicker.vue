@@ -87,13 +87,13 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside))
           <input
             v-model="customLang"
             class="flex-1 text-xs px-2 py-1 rounded border border-border bg-muted/60
-                   focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder:text-muted-foreground/50"
+                   focus:outline-none focus:ring-1 focus:ring-foreground/30 placeholder:text-muted-foreground/40"
             placeholder="自定义语言…"
             autofocus
           />
           <button
             type="submit"
-            class="text-xs px-2 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+            class="text-xs px-2 py-1 rounded bg-foreground text-background hover:opacity-90 transition-opacity"
           >
             插入
           </button>

@@ -3,15 +3,21 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import {
   Bold, Italic, Strikethrough, Underline,
   Code, Link, Quote, List, ListOrdered,
-  Table2, Minus, MoreHorizontal,
+  Table2, Minus, MoreHorizontal, ImageIcon,
 } from 'lucide-vue-next'
 import { useEditorStore } from '@/stores/editor'
 import HeadingPicker from './HeadingPicker.vue'
 import CodeBlockPicker from './CodeBlockPicker.vue'
 import EmojiPicker from './EmojiPicker.vue'
+import ImageInsertModal from './ImageInsertModal.vue'
 
 const store = useEditorStore()
 const fmt = (cmd: string) => store.formatExecutor?.(cmd)
+const showImageModal = ref(false)
+
+function onImageInsert(syntax: string) {
+  store.formatExecutor?.(`raw:${syntax}`)
+}
 
 // ─── item definitions ───────────────────────────────────────────────────────
 type BtnItem  = { kind: 'btn';       cmd: string; icon: unknown; title: string }
@@ -19,7 +25,8 @@ type SepItem  = { kind: 'sep' }
 type HItem    = { kind: 'heading' }
 type CBItem   = { kind: 'codeblock' }
 type EItem    = { kind: 'emoji' }
-type Item     = BtnItem | SepItem | HItem | CBItem | EItem
+type IItem    = { kind: 'image' }
+type Item     = BtnItem | SepItem | HItem | CBItem | EItem | IItem
 
 const ITEMS: Item[] = [
   { kind: 'emoji' },
@@ -33,6 +40,7 @@ const ITEMS: Item[] = [
   { kind: 'sep' },
   { kind: 'btn', cmd: 'code',          icon: Code,          title: '行内代码' },
   { kind: 'btn', cmd: 'link',          icon: Link,          title: '链接' },
+  { kind: 'image' },
   { kind: 'codeblock' },
   { kind: 'sep' },
   { kind: 'btn', cmd: 'quote',         icon: Quote,         title: '引用' },
@@ -46,6 +54,7 @@ const ITEMS: Item[] = [
 // width estimate in px for each kind
 const PX: Record<Item['kind'], number> = {
   emoji:     34,
+  image:     30,
   heading:   46,
   codeblock: 40,
   btn:       30,
@@ -133,6 +142,15 @@ function pickMore(cmd: string) { fmt(cmd); moreOpen.value = false }
         @select="(lang) => fmt(lang ? `codeblock:${lang}` : 'codeblock')"
       />
       <button
+        v-else-if="item.kind === 'image'"
+        class="fmt-btn"
+        title="插入图片"
+        @mousedown.prevent
+        @click="showImageModal = true"
+      >
+        <ImageIcon :size="15" />
+      </button>
+      <button
         v-else
         class="fmt-btn"
         :title="(item as BtnItem).title"
@@ -182,6 +200,17 @@ function pickMore(cmd: string) { fmt(cmd); moreOpen.value = false }
               <div class="border-t border-border" />
             </template>
 
+            <!-- Image -->
+            <button
+              v-else-if="item.kind === 'image'"
+              class="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-foreground/80
+                     hover:text-foreground hover:bg-accent transition-colors"
+              @click="showImageModal = true; moreOpen = false"
+            >
+              <ImageIcon :size="14" class="shrink-0" />
+              插入图片
+            </button>
+
             <!-- Codeblock -->
             <div v-else-if="item.kind === 'codeblock'" class="px-2 py-1.5">
               <p class="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5">代码块</p>
@@ -206,6 +235,13 @@ function pickMore(cmd: string) { fmt(cmd); moreOpen.value = false }
       </Teleport>
     </template>
   </div>
+
+  <!-- Image insert modal -->
+  <ImageInsertModal
+    v-if="showImageModal"
+    @insert="onImageInsert"
+    @close="showImageModal = false"
+  />
 </template>
 
 <style scoped>

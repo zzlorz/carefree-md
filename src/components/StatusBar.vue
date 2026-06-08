@@ -20,7 +20,7 @@ const modeLabel = computed(() => {
     <span v-if="store.hasActiveFile" class="flex items-center gap-1.5">
       <span
         v-if="store.isDirty"
-        class="w-2 h-2 rounded-full bg-orange-400 shrink-0"
+        class="w-2 h-2 rounded-full bg-foreground/40 shrink-0"
         title="未保存"
       />
       <span class="truncate max-w-48">{{ store.filename ?? store.draftTitle ?? '未命名' }}</span>

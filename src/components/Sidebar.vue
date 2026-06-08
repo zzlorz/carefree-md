@@ -244,7 +244,7 @@ function closeDirectory() {
           <p class="text-[11px] text-muted-foreground/70 mt-0.5">{{ timeAgo(draft.updatedAt) }}</p>
         </div>
         <button
-          class="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 hover:text-red-500 transition-all shrink-0 mt-0.5"
+          class="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 hover:text-foreground transition-all shrink-0 mt-0.5"
           title="删除草稿"
           @click.stop="removeDraft($event, draft.id)"
         >
@@ -269,7 +269,7 @@ function closeDirectory() {
             <FolderOpen :size="13" />
           </button>
           <button
-            class="p-1 rounded hover:bg-accent text-muted-foreground hover:text-red-500 transition-colors"
+            class="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="关闭文件夹"
             @click="closeDirectory()"
           >

@@ -114,8 +114,8 @@ function doPrint() {
 
           <!-- Print button -->
           <button
-            class="flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600
-                   text-white text-sm font-medium transition-colors"
+            class="flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-foreground text-background
+                   text-sm font-medium hover:opacity-90 transition-opacity"
             @click="doPrint"
           >
             <Printer :size="15" />

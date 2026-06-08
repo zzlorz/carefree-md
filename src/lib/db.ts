@@ -3,26 +3,34 @@ export interface Draft {
   title: string
   content: string
   updatedAt: number
-  customTitle?: string  // User-renamed title; takes precedence over auto-derived
+  customTitle?: string
 }
 
 const DB_NAME = 'carefree-md'
-const DB_VERSION = 1
+const DB_VERSION = 2          // bumped: adds `images` store
 const STORE = 'drafts'
+const IMG_STORE = 'images'
 
-// Keep the connection open for the page lifetime
 let _dbPromise: Promise<IDBDatabase> | null = null
 
-function openDB(): Promise<IDBDatabase> {
+export function openDB(): Promise<IDBDatabase> {
   if (_dbPromise) return _dbPromise
   _dbPromise = new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION)
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = (event) => {
       const db = req.result
+      // drafts store (version 1)
       if (!db.objectStoreNames.contains(STORE)) {
         const os = db.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true })
         os.createIndex('updatedAt', 'updatedAt')
       }
+      // images store (version 2)
+      if (!db.objectStoreNames.contains(IMG_STORE)) {
+        const imgOs = db.createObjectStore(IMG_STORE, { keyPath: 'id' })
+        imgOs.createIndex('draftId', 'draftId')
+        imgOs.createIndex('createdAt', 'createdAt')
+      }
+      void event
     }
     req.onsuccess = () => resolve(req.result)
     req.onerror = () => reject(req.error)

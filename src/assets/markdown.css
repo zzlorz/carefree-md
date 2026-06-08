@@ -175,9 +175,14 @@
   max-width: 100%;
   height: auto;
   display: block;
-  margin: 1em auto;
-  border-radius: 6px;
+  margin: 1em 0;        /* default: left-aligned */
+  border-radius: 4px;
 }
+
+/* Alignment via class — set by markdown-it image rule */
+.markdown-body img.align-left   { margin-left: 0; margin-right: auto; }
+.markdown-body img.align-center { margin-left: auto; margin-right: auto; }
+.markdown-body img.align-right  { margin-left: auto; margin-right: 0; }
 
 .markdown-body hr {
   border: none;

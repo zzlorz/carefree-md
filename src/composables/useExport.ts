@@ -1,9 +1,46 @@
 import { useEditorStore } from '@/stores/editor'
 import { useMarkdown } from '@/composables/useMarkdown'
+import { imageDbGet, imageDbList } from '@/lib/imageDb'
+import { mimeToExt } from '@/lib/imageUtils'
 
 export function useExport() {
   const store = useEditorStore()
   const { render } = useMarkdown()
+
+  // Convert a Blob to a base64 data URL
+  function blobToDataURL(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = () => reject(reader.error)
+      reader.readAsDataURL(blob)
+    })
+  }
+
+  // Replace all img://uuid references in markdown content with base64 data URLs.
+  // Returns a new markdown string safe to render/export standalone.
+  async function resolveIdbImages(content: string): Promise<string> {
+    const matches = [...content.matchAll(/img:\/\/([a-z0-9_]+)/g)]
+    if (matches.length === 0) return content
+
+    let resolved = content
+    const seen = new Set<string>()
+
+    for (const m of matches) {
+      const id = m[1]
+      if (seen.has(id)) continue
+      seen.add(id)
+
+      const record = await imageDbGet(id)
+      if (!record) continue
+
+      const dataUrl = await blobToDataURL(record.data)
+      // Replace all occurrences of img://id with the data URL
+      resolved = resolved.replaceAll(`img://${id}`, dataUrl)
+    }
+
+    return resolved
+  }
 
   function getFilename(ext: string) {
     const base = store.filename
@@ -22,8 +59,9 @@ export function useExport() {
   }
 
   // ── HTML export ─────────────────────────────────────────────────────────────
-  function exportHTML() {
-    const html = render(store.content)
+  async function exportHTML() {
+    const content = await resolveIdbImages(store.content)
+    const html = render(content)
     const styles = collectStyles()
 
     const full = `<!DOCTYPE html>
@@ -51,6 +89,7 @@ export function useExport() {
   async function exportPDF() {
     const html2pdf = (await import('html2pdf.js')).default
     const styles = collectStyles()
+    const content = await resolveIdbImages(store.content)
 
     // Build self-contained HTML string — html2pdf renders it in an iframe
     const htmlString = `
@@ -71,7 +110,7 @@ export function useExport() {
         img { max-width: 100% !important; height: auto !important; }
         table { width: 100% !important; }
       </style>
-      <div class="markdown-body">${render(store.content)}</div>
+      <div class="markdown-body">${render(content)}</div>
     `
 
     const opt = {
@@ -94,19 +133,46 @@ export function useExport() {
   // ── DOCX export ──────────────────────────────────────────────────────────────
   async function exportDOCX() {
     const { markdownDocx, Packer } = await import('markdown-docx')
+    // Resolve IDB images to data URLs so docx can embed them
+    const content = await resolveIdbImages(store.content)
 
-    const doc = await markdownDocx(store.content, {
+    const doc = await markdownDocx(content, {
       title: store.filename ?? store.draftTitle ?? 'document',
     })
 
-    const buffer = await Packer.toBuffer(doc)
+    const blob = await Packer.toBlob(doc)
+    download(blob, getFilename('docx'))
+  }
 
-    download(
-      new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      }),
-      getFilename('docx')
-    )
+  // ── ZIP export (draft mode only) ─────────────────────────────────────────────
+  async function exportZIP() {
+    const JSZip = (await import('jszip')).default
+    const zip = new JSZip()
+
+    const draftId = store.draftId ?? -1
+    const images = await imageDbList(draftId)
+
+    // Rewrite img://uuid → ./assets/uuid.ext in markdown before packing
+    let content = store.content
+    for (const img of images) {
+      const ext = mimeToExt(img.mimeType)
+      const filename = `${img.id}.${ext}`
+      content = content.replaceAll(`img://${img.id}`, `./assets/${filename}`)
+    }
+
+    const mdFilename = (store.draftTitle ?? 'untitled') + '.md'
+    zip.file(mdFilename, content)
+
+    if (images.length > 0) {
+      const folder = zip.folder('assets')!
+      for (const img of images) {
+        const ext = mimeToExt(img.mimeType)
+        folder.file(`${img.id}.${ext}`, img.data)
+      }
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' })
+    download(blob, getFilename('zip'))
   }
 
   // ── helper ───────────────────────────────────────────────────────────────────
@@ -119,5 +185,5 @@ export function useExport() {
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
-  return { exportHTML, exportPDF, exportDOCX }
+  return { exportHTML, exportPDF, exportDOCX, exportZIP }
 }

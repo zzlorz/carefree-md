@@ -102,7 +102,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside))
           <input
             v-model="search"
             class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-border bg-muted/60
-                   focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder:text-muted-foreground/50"
+                   focus:outline-none focus:ring-1 focus:ring-foreground/30 placeholder:text-muted-foreground/40"
             placeholder="搜索表情…"
           />
         </div>

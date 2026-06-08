@@ -34,8 +34,8 @@ function handleClick() {
       <ChevronRight v-else-if="node.kind === 'directory'" :size="14" class="shrink-0" />
       <span v-else class="w-[14px] shrink-0" />
 
-      <Folder v-if="node.kind === 'directory'" :size="14" class="shrink-0 text-yellow-500" />
-      <FileText v-else :size="14" class="shrink-0 text-blue-400" />
+      <Folder v-if="node.kind === 'directory'" :size="14" class="shrink-0 text-muted-foreground" />
+      <FileText v-else :size="14" class="shrink-0 text-muted-foreground" />
 
       <span class="truncate flex-1">{{ node.name }}</span>
     </div>

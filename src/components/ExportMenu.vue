@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { FileInput, FileText, FileCode, FileType2, Loader2 } from 'lucide-vue-next'
+import { FileInput, FileText, FileCode, FileType2, Archive, Loader2 } from 'lucide-vue-next'
 import { useExport } from '@/composables/useExport'
+import { useEditorStore } from '@/stores/editor'
 
-const { exportHTML, exportPDF, exportDOCX } = useExport()
+const { exportHTML, exportPDF, exportDOCX, exportZIP } = useExport()
+const store = useEditorStore()
 
 const open = ref(false)
 const loading = ref<string | null>(null)
@@ -25,13 +27,14 @@ async function toggle() {
   }
 }
 
-async function run(type: 'html' | 'pdf' | 'docx') {
+async function run(type: 'html' | 'pdf' | 'docx' | 'zip') {
   loading.value = type
   open.value = false
   try {
-    if (type === 'html') await exportHTML()
-    else if (type === 'pdf') await exportPDF()
-    else await exportDOCX()
+    if (type === 'html')  await exportHTML()
+    else if (type === 'pdf')   await exportPDF()
+    else if (type === 'docx')  await exportDOCX()
+    else if (type === 'zip')   await exportZIP()
   } finally {
     loading.value = null
   }
@@ -67,27 +70,27 @@ onUnmounted(() => document.removeEventListener('mousedown', onOutside))
       >
         <p class="text-[10px] text-muted-foreground uppercase tracking-wider px-3 py-1.5">导出为</p>
 
-        <button
-          class="export-item"
-          @click="run('pdf')"
-        >
-          <FileText :size="14" class="shrink-0" />
+        <button class="export-item" @click="run('pdf')">
+          <FileText :size="14" class="text-muted-foreground shrink-0" />
           PDF
         </button>
-        <button
-          class="export-item"
-          @click="run('html')"
-        >
-          <FileCode :size="14" class="shrink-0" />
+        <button class="export-item" @click="run('html')">
+          <FileCode :size="14" class="text-muted-foreground shrink-0" />
           HTML
         </button>
-        <!-- <button
+        <button class="export-item" @click="run('docx')">
+          <FileType2 :size="14" class="text-muted-foreground shrink-0" />
+          Word 文档
+        </button>
+        <!-- ZIP only shown in draft mode (images stored in IDB) -->
+        <button
+          v-if="store.draftId !== null"
           class="export-item"
-          @click="run('docx')"
+          @click="run('zip')"
         >
-          <FileType2 :size="14" class="shrink-0" />
-          Word
-        </button> -->
+          <Archive :size="14" class="text-muted-foreground shrink-0" />
+          ZIP 打包
+        </button>
       </div>
     </Teleport>
   </div>

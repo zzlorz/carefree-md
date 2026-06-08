@@ -9,7 +9,7 @@ const fs = useFileSystem()
   <div class="flex flex-col items-center justify-center h-full gap-6 select-none">
     <!-- Logo -->
     <div class="flex flex-col items-center gap-2">
-      <div class="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center shadow-md">
+      <div class="w-12 h-12 rounded-2xl bg-foreground flex items-center justify-center shadow-md">
         <FileText :size="24" class="text-white" />
       </div>
       <h1 class="text-lg font-semibold text-foreground tracking-tight">Carefree MD</h1>
@@ -18,15 +18,15 @@ const fs = useFileSystem()
     <!-- Actions -->
     <div class="flex flex-col gap-2 w-56">
       <button class="welcome-btn" @click="fs.newFile()">
-        <FilePlus :size="16" class="text-blue-500 shrink-0" />
+        <FilePlus :size="16" class="text-muted-foreground shrink-0" />
         <span class="text-sm font-medium">新建草稿</span>
       </button>
       <button class="welcome-btn" @click="fs.openFile()">
-        <FileText :size="16" class="text-green-500 shrink-0" />
+        <FileText :size="16" class="text-muted-foreground shrink-0" />
         <span class="text-sm font-medium">打开文件</span>
       </button>
       <button class="welcome-btn" @click="fs.openDirectory()">
-        <FolderOpen :size="16" class="text-yellow-500 shrink-0" />
+        <FolderOpen :size="16" class="text-muted-foreground shrink-0" />
         <span class="text-sm font-medium">打开文件夹</span>
       </button>
     </div>

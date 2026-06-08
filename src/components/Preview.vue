@@ -2,15 +2,23 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useEditorStore } from '@/stores/editor'
 import { useMarkdown } from '@/composables/useMarkdown'
+import { useImageManager } from '@/composables/useImageManager'
 
 const store = useEditorStore()
-const { render } = useMarkdown()
+const { resolveSrc, blobCache } = useImageManager()
+const { render } = useMarkdown(resolveSrc)
 const scrollEl = ref<HTMLElement | null>(null)
 
-const rendered = computed(() => render(store.content))
+const rendered = computed(() => {
+  // Reading blobCache.size as a reactive dependency:
+  // any time an image is added/removed from the cache, this recomputes.
+  void blobCache.size
+  return render(store.content)
+})
 
-// Track preview scroll
+// ── Sync scroll from editor ──────────────────────────────────────────────────
 let ignorePreviewScroll = false
+
 function onScroll() {
   if (!scrollEl.value || ignorePreviewScroll) return
   const el = scrollEl.value
@@ -23,7 +31,6 @@ function onScroll() {
 onMounted(() => scrollEl.value?.addEventListener('scroll', onScroll))
 onUnmounted(() => scrollEl.value?.removeEventListener('scroll', onScroll))
 
-// Sync scroll from editor to preview
 watch(
   () => store.editorScrollRatio,
   (ratio) => {

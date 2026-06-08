@@ -40,7 +40,7 @@ function handleClose() {
 </script>
 
 <template>
-  <header class="flex items-center h-11 px-2 border-b border-border bg-background/95 backdrop-blur-sm gap-1 shrink-0">
+  <header class="relative flex items-center h-11 px-2 border-b border-border bg-background/95 backdrop-blur-sm gap-1 shrink-0">
     <!-- Sidebar toggle -->
     <button
       class="toolbar-btn"
@@ -61,7 +61,7 @@ function handleClose() {
     </button>
     <button
       class="toolbar-btn"
-      :class="{ 'text-blue-500': store.isDirty }"
+      :class="{ 'text-foreground': store.isDirty }"
       title="保存 (Ctrl+S)"
       @click="fs.saveFile()"
     >
@@ -73,7 +73,7 @@ function handleClose() {
       <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-muted text-xs text-foreground/70 max-w-48">
         <span
           v-if="store.isDirty"
-          class="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"
+          class="w-1.5 h-1.5 rounded-full bg-foreground/40 shrink-0"
           title="未保存"
         />
         <span class="truncate">{{ store.filename ?? store.draftTitle ?? '未命名' }}</span>
@@ -87,11 +87,10 @@ function handleClose() {
       </button>
     </div>
 
-    <!-- Spacer -->
     <div class="flex-1" />
 
-    <!-- App name -->
-    <span class="text-sm font-semibold text-foreground/60 tracking-tight select-none">
+    <!-- App name: absolutely centered so it's always at the true midpoint -->
+    <span class="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-foreground/60 tracking-tight select-none pointer-events-none">
       Carefree MD
     </span>
 

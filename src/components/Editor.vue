@@ -7,8 +7,10 @@ import { markdown } from '@codemirror/lang-markdown'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { bracketMatching, indentOnInput } from '@codemirror/language'
 import { useEditorStore } from '@/stores/editor'
+import { useImageManager } from '@/composables/useImageManager'
 
 const store = useEditorStore()
+const { handleImageFile } = useImageManager()
 const container = ref<HTMLElement | null>(null)
 let view: EditorView | null = null
 
@@ -142,6 +144,14 @@ function executeFormat(cmd: FormatCmd) {
     view.dispatch({
       changes: { from, to, insert: emoji },
       selection: { anchor: from + emoji.length },
+    })
+  }
+  else if (cmd.startsWith('raw:')) {
+    const text = cmd.slice(4)
+    const { from, to } = view.state.selection.main
+    view.dispatch({
+      changes: { from, to, insert: text },
+      selection: { anchor: from + text.length },
     })
   }
   else if (cmd === 'bold')            { toggleFormat(view, '**'); }
@@ -295,8 +305,61 @@ onUnmounted(() => {
   view?.destroy()
   view = null
 })
+
+function insertSyntax(syntax: string) {
+  if (!view) return
+  const { from, to } = view.state.selection.main
+  view.dispatch({
+    changes: { from, to, insert: syntax },
+    selection: { anchor: from + syntax.length },
+  })
+  view.focus()
+}
+
+async function onPaste(e: ClipboardEvent) {
+  const items = Array.from(e.clipboardData?.items ?? [])
+  const imageItem = items.find(i => i.type.startsWith('image/'))
+  if (!imageItem) return
+  e.preventDefault()
+  const file = imageItem.getAsFile()
+  if (!file) return
+  try {
+    const syntax = await handleImageFile(file)
+    insertSyntax(syntax)
+  } catch (err) {
+    console.error('Image paste failed:', err)
+  }
+}
+
+async function onDrop(e: DragEvent) {
+  const files = Array.from(e.dataTransfer?.files ?? []).filter(f => f.type.startsWith('image/'))
+  if (!files.length) return
+  e.preventDefault()
+  for (const file of files) {
+    try {
+      const syntax = await handleImageFile(file)
+      // Insert at drop position when possible
+      const pos = view ? (view.posAtCoords({ x: e.clientX, y: e.clientY }) ?? view.state.doc.length) : 0
+      if (view) {
+        view.dispatch({
+          changes: { from: pos, insert: syntax + '\n' },
+          selection: { anchor: pos + syntax.length + 1 },
+        })
+      }
+    } catch (err) {
+      console.error('Image drop failed:', err)
+    }
+  }
+  view?.focus()
+}
 </script>
 
 <template>
-  <div ref="container" class="h-full overflow-hidden editor-container" />
+  <div
+    ref="container"
+    class="h-full overflow-hidden editor-container"
+    @paste="onPaste"
+    @drop="onDrop"
+    @dragover.prevent
+  />
 </template>
