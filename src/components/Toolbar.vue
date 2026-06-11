@@ -9,6 +9,7 @@ import {
   Columns2,
   FileText,
   Eye,
+  PenLine,
   Moon,
   Sun,
   X,
@@ -24,8 +25,9 @@ const fs = useFileSystem()
 const showPrint = ref(false)
 
 const modes: { id: EditorMode; label: string; icon: unknown }[] = [
-  { id: 'edit', label: '编辑', icon: FileText },
-  { id: 'split', label: '分屏', icon: Columns2 },
+  { id: 'wysiwyg', label: '即时', icon: PenLine },
+  { id: 'edit',    label: '编辑', icon: FileText },
+  { id: 'split',   label: '分屏', icon: Columns2 },
   { id: 'preview', label: '预览', icon: Eye },
 ]
 

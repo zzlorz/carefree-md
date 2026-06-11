@@ -7,7 +7,7 @@ export interface FileNode {
   expanded?: boolean
 }
 
-export type EditorMode = 'edit' | 'split' | 'preview'
+export type EditorMode = 'edit' | 'split' | 'preview' | 'wysiwyg'
 export type Theme = 'light' | 'dark'
 
 declare module 'markdown-it-task-lists' {

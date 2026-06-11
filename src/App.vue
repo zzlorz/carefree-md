@@ -8,6 +8,7 @@ import Toolbar from '@/components/Toolbar.vue'
 import FormatBar from '@/components/FormatBar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Editor from '@/components/Editor.vue'
+import WysiwygEditor from '@/components/WysiwygEditor.vue'
 import Preview from '@/components/Preview.vue'
 import StatusBar from '@/components/StatusBar.vue'
 import WelcomeScreen from '@/components/WelcomeScreen.vue'
@@ -17,15 +18,16 @@ const idb = useIDB()
 useKeyboard()
 useAutoSave()
 
-const showWelcome = computed(() => !store.hasActiveFile)
-const showEditor = computed(() => store.mode === 'edit' || store.mode === 'split')
-const showPreview = computed(() => store.mode === 'preview' || store.mode === 'split')
+const showWelcome  = computed(() => !store.hasActiveFile)
+const isWysiwyg    = computed(() => store.mode === 'wysiwyg')
+const showEditor   = computed(() => store.mode === 'edit' || store.mode === 'split')
+const showPreview  = computed(() => store.mode === 'preview' || store.mode === 'split')
+const showFormatBar = computed(() => !showWelcome.value && showEditor.value)
 
 onMounted(async () => {
   store.initTheme()
   document.title = store.title
 
-  // Restore the most recently edited draft on page load
   const all = await idb.refresh().then(() => idb.drafts.value)
   if (all.length > 0) {
     const latest = all[0]
@@ -53,27 +55,32 @@ onMounted(async () => {
       <!-- Editor/Preview area -->
       <main class="flex flex-col flex-1 overflow-hidden">
 
-        <!-- FormatBar spans full width, only when editor is visible -->
-        <FormatBar v-if="!showWelcome && showEditor" />
+        <FormatBar v-if="showFormatBar" />
 
         <div class="flex flex-1 overflow-hidden">
           <WelcomeScreen v-if="showWelcome" class="flex-1" />
 
           <template v-else>
-            <div
-              v-if="showEditor"
-              class="flex flex-col overflow-hidden"
-              :class="showPreview ? 'flex-1 border-r border-border' : 'flex-1'"
-              style="min-width: 320px"
-            >
-              <Editor />
-            </div>
-            <div
-              v-if="showPreview"
-              class="flex-1 overflow-hidden"
-            >
-              <Preview />
-            </div>
+            <!-- WYSIWYG mode: Milkdown full-width -->
+            <WysiwygEditor v-if="isWysiwyg" class="flex-1" />
+
+            <!-- Edit / Split / Preview modes -->
+            <template v-else>
+              <div
+                v-if="showEditor"
+                class="flex flex-col overflow-hidden"
+                :class="showPreview ? 'flex-1 border-r border-border' : 'flex-1'"
+                style="min-width: 320px"
+              >
+                <Editor />
+              </div>
+              <div
+                v-if="showPreview"
+                class="flex-1 overflow-hidden"
+              >
+                <Preview />
+              </div>
+            </template>
           </template>
         </div>
       </main>
