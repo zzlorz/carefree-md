@@ -4,6 +4,7 @@ import { useEditorStore } from '@/stores/editor'
 import { useKeyboard } from '@/composables/useKeyboard'
 import { useAutoSave } from '@/composables/useAutoSave'
 import { useIDB } from '@/composables/useIDB'
+import { useImageGc } from '@/composables/useImageGc'
 import Toolbar from '@/components/Toolbar.vue'
 import FormatBar from '@/components/FormatBar.vue'
 import Sidebar from '@/components/Sidebar.vue'
@@ -16,6 +17,7 @@ const store = useEditorStore()
 const idb = useIDB()
 useKeyboard()
 useAutoSave()
+const imageGc = useImageGc()
 
 const showWelcome = computed(() => !store.hasActiveFile)
 const showEditor = computed(() => store.mode === 'edit' || store.mode === 'split')
@@ -31,6 +33,8 @@ onMounted(async () => {
     const latest = all[0]
     store.loadDraft(latest.id, latest.content, latest.customTitle ?? latest.title)
   }
+
+  imageGc.start()
 })
 </script>
 
